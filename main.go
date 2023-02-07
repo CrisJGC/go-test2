@@ -23,26 +23,35 @@ func main() {
 
 	greetUser()
 
-	firstNsme, email, userItems := getUserInput()
+	firstName, email, userItems := getUserInput()
+	isValidName, isValidEmail, isValidItemNumber := validateUserInput(firstName, email, userItems)
 
-	if userItems > stock {
-		fmt.Printf("We only have %v items, so we can't sell you %v items.\n", stock, userItems)
-		continue
+	if isValidName && isValidEmail && isValidItemNumber {
+
+		buyItem(userItems, firstName, email)
+		wg.Add(1)
+		go buyItem(userItems, firstName, email)
+
+		firstNames := getFirstName()
+		fmt.Printf("The first names of our best costumers are: %v\n", firstNames)
+
+		if stock == 0 {
+			// end program
+			fmt.Println("Our store is out of inventory. Come back next week.")
+			// break
+		}
+	} else {
+		if !isValidName {
+			fmt.Println("First name you entered is too short")
+		}
+		if !isValidEmail {
+			fmt.Println("The email address ypu entered doesn't contain @ sing")
+		}
+		if !isValidItemNumber {
+			fmt.Println("Number of Items you entered is invalid")
+		}
 	}
-
-	stock = stock - userItems
-	totalSells = append(totalSells, firstName)
-
-	// fmt.Printf("Array: %v\n", totalSells)
-	// fmt.Printf("First value %v\n", totalSells[0])
-	// fmt.Printf("Array type: %T\n", totalSells)
-	// fmt.Printf("Array length: %v\n", len(totalSells))
-
-	if stock == 0 {
-		fmt.Println("All our items are sold")
-		break
-	}
-
+	wg.Wait()
 }
 
 func greetUser() {
